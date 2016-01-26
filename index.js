@@ -3,20 +3,22 @@ var express = require('express');
 
 var app = express();
 
-if(process.env.VCAP_SERVICES){
-  var env = JSON.parse(process.env.VCAP_SERVICES);
-  var mongo = env['MongoDB-Service'][0]['credentials'];
-}
-else{
-  var mongo = {
-    "hostname":"localhost",
-    "port":27017,
-    "username":"",
-    "password":"", 
-    "name":"",
-    "db":"db"
-  }
-}
+function getmongoenv() {
+    if(process.env.VCAP_SERVICES){
+	var env = JSON.parse(process.env.VCAP_SERVICES);
+	var mongo = env['MongoDB-Service'][0]['credentials'];
+    }
+    else {
+	var mongo = {
+	    "hostname":"localhost",
+	    "port":27017,
+	    "username":"",
+	    "password":"", 
+	    "name":"",
+	    "db":"db"
+	}
+    return mongo
+}}
 
 var generate_mongo_url = function(obj){
   obj.hostname = (obj.hostname || 'localhost');
@@ -31,11 +33,7 @@ var generate_mongo_url = function(obj){
   }
 }
 
-var mongourl = generate_mongo_url(mongo);
-
-var port = (process.env.VMC_APP_PORT || 3000);
-var host = (process.env.VCAP_APP_HOST || 'localhost');
-
+var port = (process.env.PORT || 3000);
  
 app.get('/', function (req, res) {
   res.send('Hello World!');
@@ -51,6 +49,8 @@ app.get('/env', function (req, res) {
 });
 
 app.get('/mon', function (req, res) {
+    var mongo = getmongoenv();
+    var mongourl = generate_mongo_url(mongo);
     res.write(mongourl+'\n');
     res.write(JSON.stringify(mongo)+'\n\n');
     res.write(JSON.stringify(process.env.VCAP_SERVICES)+'\n');
