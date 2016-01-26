@@ -44,6 +44,22 @@ app.get('/con', function (req, res) {
 
 
 
+app.get('/set', function (req, res) {
+    res.send(JSON.stringify(req.query))
+    // jam this straight into mongo
+    var url = getURI();
+    mc.connect(url, function(err,db) {
+	assert.equal(null,err);
+	db.collection('node').insertOne(req.query, function (err, result) {
+	    assert.equal(err, null);
+	    db.close();
+	});
+
+    });
+});
+
+
+
 var server = app.listen(port, function () {
   var host = server.address().address;
   var port = server.address().port;
