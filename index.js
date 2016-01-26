@@ -1,46 +1,18 @@
 var express = require('express');
-
 var app = express();
 
-function getmongoenv() {
-    var mongo = 0;
-    if(process.env.VCAP_SERVICES){
-	var env = JSON.parse(process.env.VCAP_SERVICES);
-	mongo = env['MongoDB-Service'][0]['credentials'];
-    }
-    else {
-	mongo = {
-	    "hostname":"localhost",
-	    "port":27017,
-	    "username":"",
-	    "password":"", 
-	    "name":"",
-	    "db":"foo"
-	}
-    return mongo;
-    }
-}
-
-var generate_mongo_url = function(obj) {
-    if(process.env.VCAP_SERVICES){
-	return obj.uri
-    }
-    if(obj.username && obj.password){
-	return "mongodb://" + obj.username + ":" + obj.password + "@" + obj.hostname + ":" + obj.port + "/" + obj.db;
-    }
-    else {
-	return "mongodb://" + obj.hostname + ":" + obj.port + "/" + obj.db;
-    }
-}
+var mc = require('mongodb').MongoClient;
+var assert = require('assert');
 
 function getURI() {
-     if(process.env.VCAP_SERVICES){   
+    if(process.env.VCAP_SERVICES){   
 	var env = JSON.parse(process.env.VCAP_SERVICES);
-	return (env['MongoDB-Service'][0]['credentials']['uri']);
+	var fullurl = (env['MongoDB-Service'][0]['credentials']['uri']);
+	var front = fullurl.split('?')[0];
+	return front
     } else {
-	return "mongodb://hostname:27017/db"
+	return "mongodb://localhost:27017/db"
     }
-
 }
 
 var port = (process.env.PORT || 3000);
@@ -57,9 +29,17 @@ app.get('/env', function (req, res) {
 app.get('/', function (req, res) {
     var mongourl = getURI();
     res.write(mongourl+'\n');
-    //res.write(JSON.stringify(mongo)+'\n\n');
-    //res.write(JSON.stringify(process.env.VCAP_SERVICES)+'\n');
     res.end();
+});
+
+app.get('/con', function (req, res) {
+    var url = getURI();
+    mc.connect(url, function(err,db) {
+	assert.equal(null,err);
+	res.send("connected to server");
+	console.log("connected to server");
+	db.close()
+    })
 });
 
 
