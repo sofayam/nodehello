@@ -42,8 +42,6 @@ app.get('/con', function (req, res) {
     })
 });
 
-
-
 app.get('/set', function (req, res) {
     res.send(JSON.stringify(req.query))
     // jam this straight into mongo
@@ -58,7 +56,22 @@ app.get('/set', function (req, res) {
     });
 });
 
-
+app.get('/get', function (req, res) {
+    var url = getURI();
+    mc.connect(url, function(err,db) {
+	assert.equal(null,err);
+	var cursor = db.collection('node').find();
+	cursor.each(function(err,doc) {
+	    assert.equal(null,err);
+	    if (doc != null) {
+		res.write(JSON.stringify(doc) + "\n");
+	    } else {
+		db.close();
+		res.end();
+	    }   	
+	});
+    });
+});
 
 var server = app.listen(port, function () {
   var host = server.address().address;
