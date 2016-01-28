@@ -28,8 +28,7 @@ app.get('/env', function (req, res) {
 
 app.get('/', function (req, res) {
     var mongourl = getURI();
-    res.write(mongourl+'\n');
-    res.end();
+    res.send(mongourl);
 });
 
 app.get('/con', function (req, res) {
@@ -52,7 +51,6 @@ app.get('/set', function (req, res) {
 	    assert.equal(err, null);
 	    db.close();
 	});
-
     });
 });
 
