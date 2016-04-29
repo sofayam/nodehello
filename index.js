@@ -15,7 +15,7 @@ function getURI() {
     }
 }
 
-var port = (process.env.PORT || 3000);
+var port = (process.env.PORT || 3001);
  
 
 app.get('/env', function (req, res) {
@@ -27,6 +27,7 @@ app.get('/env', function (req, res) {
 });
 
 app.get('/', function (req, res) {
+    console.log("someone touched me\n");
     var mongourl = getURI();
     res.send(mongourl);
 });
